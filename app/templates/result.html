@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h2>Enhancement Complete!</h2>
+        <a href="{{ url_for('main.index') }}" class="btn" style="background-color: #718096; margin-right: 10px;">Upload Another</a>
+        <a href="{{ url_for('main.uploaded_file', filename=processed) }}" download class="btn">Download Result</a>
+    </div>
+
+    <div class="comparison-container">
+        <div class="image-card">
+            <h3>Original (Low Res)</h3>
+            <img src="{{ url_for('main.uploaded_file', filename=original) }}" alt="Original Image">
+        </div>
+        <div class="image-card">
+            <h3>Enhanced (High Res Model)</h3>
+            <img src="{{ url_for('main.uploaded_file', filename=processed) }}" alt="Processed Image">
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 60px auto;">
+    <div class="upload-area" id="drop-area">
+        <h2>Upload low-res image</h2>
+        <p>Drag and drop your image here, or click to select</p>
+        
+        <form action="{{ url_for('main.index') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" id="fileElem" accept="image/*" style="display:none" onchange="this.form.submit()">
+            <label for="fileElem" class="btn">Select Image</label>
+        </form>
+    </div>
+</div>
+
+<script>
+    let dropArea = document.getElementById('drop-area');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false)
+    });
+
+    function preventDefaults (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false)
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false)
+    });
+
+    function highlight(e) {
+    dropArea.style.borderColor = 'var(--primary-color)';
+    dropArea.style.backgroundColor = '#eef2f7';
+    }
+
+    function unhighlight(e) {
+    dropArea.style.borderColor = '#cbd5e0';
+    dropArea.style.backgroundColor = '#fff';
+    }
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+    var dt = e.dataTransfer;
+    var files = dt.files;
+    document.getElementById('fileElem').files = files;
+    document.getElementById('fileElem').form.submit();
+    }
+</script>
+{% endblock %}
