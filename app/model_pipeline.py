@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import pickle
 
+# --- Model Definitions (Copied from notebook to ensure pickle compatibility) ---
 class SRCNN(nn.Module):
     def __init__(self, activation="relu", residual=False):
         super().__init__()
@@ -42,11 +43,13 @@ class ImprovedSRCNN(nn.Module):
         out = self.conv4(out)
         return identity + self.res_scale * out
 
+# --- Pipeline Class ---
 
 class ModelPipeline:
     def __init__(self, model_path=None):
         self.model = None
-        self.device = 'cpu'
+        self.device = 'cpu' # Force CPU for this demo, or check cuda if needed
+        # Default path relative to project root (where run.py is executed)
         default_path = os.path.join('SRCNN', 'models', 'base_srcnn_model.pkl')
         
         if model_path and os.path.exists(model_path):
@@ -60,9 +63,14 @@ class ModelPipeline:
     def load_model(self, model_path):
         print(f"Loading model from {model_path}...")
         try:
+            # --- Pickle Namespace Fix ---
+            # The model was likely saved in a notebook where SRCNN was defined in __main__.
+            # We need to map __main__.SRCNN to our local SRCNN class.
             import sys
             import __main__
             
+            # Save original __main__ attributes if any (optional safety)
+            # Inject our classes into __main__
             setattr(__main__, 'SRCNN', SRCNN)
             setattr(__main__, 'ImprovedSRCNN', ImprovedSRCNN)
             
@@ -78,6 +86,7 @@ class ModelPipeline:
             if state is None:
                 raise KeyError(f"No 'model_state_dict' found in {model_path}")
 
+            # Auto-detect model type based on keys
             keys = list(state.keys())
             if any('net' in k for k in keys):
                 print("Detected SRCNN architecture keys.")
@@ -105,6 +114,8 @@ class ModelPipeline:
             start_time = time.time()
             print(f"Starting processing for {input_path}")
 
+            # STRICT implementation matching SRCNN/inference.ipynb enhance_image
+            
             # 1. Read image
             img = cv2.imread(str(input_path))
             if img is None:

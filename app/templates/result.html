@@ -10,34 +10,119 @@
         </div>
     </div>
 
-    <!-- Toggle Switch -->
-    <div class="toggle-container">
-        <span class="toggle-label" id="label-original">Original</span>
-        <label class="switch">
-            <input type="checkbox" id="view-toggle" checked>
-            <span class="slider"></span>
-        </label>
-        <span class="toggle-label active" id="label-adhanced">Enhanced</span>
+    <!-- Mode Selector -->
+    <div class="mode-selector">
+        <button class="mode-btn" id="mode-switch" onclick="switchToMode('switch')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2v10l5 5"></path>
+            </svg>
+            Toggle Mode
+        </button>
+        <button class="mode-btn active" id="mode-slider" onclick="switchToMode('slider')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            Slider Mode
+        </button>
     </div>
 
-    <div class="comparison-container">
-        <div class="image-card">
-            <h3 id="image-title">Enhanced Image</h3>
-            <img src="{{ url_for('main.uploaded_file', filename=processed) }}" id="result-image" alt="Result Image">
+    <!-- Toggle Switch View -->
+    <div id="switch-view" style="display: none;">
+        <div class="toggle-container">
+            <span class="toggle-label" id="label-original">Original</span>
+            <label class="switch">
+                <input type="checkbox" id="view-toggle" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label active" id="label-adhanced">Enhanced</span>
+        </div>
+
+        <div class="comparison-container">
+            <div class="image-card">
+                <h3 id="image-title">Enhanced Image</h3>
+                <img src="{{ url_for('main.uploaded_file', filename=processed) }}" id="result-image" alt="Result Image">
+            </div>
+        </div>
+    </div>
+
+    <!-- Slider Comparison View -->
+    <div id="slider-view">
+        <div class="comparison-container">
+            <div class="image-card">
+                <h3>Low Resolution vs Enhanced</h3>
+                <div class="image-comparison-slider">
+                    <div class="image-comparison-wrapper">
+                        <!-- Enhanced Image (Background) -->
+                        <img src="{{ url_for('main.uploaded_file', filename=processed) }}" alt="Enhanced" class="comparison-image after-image">
+                        
+                        <!-- Original Image (Foreground - will be clipped) -->
+                        <div class="before-image-wrapper" id="beforeWrapper">
+                            <img src="{{ url_for('main.uploaded_file', filename=original) }}" alt="Original" class="comparison-image before-image">
+                        </div>
+                        
+                        <!-- Slider Handle -->
+                        <div class="slider-handle" id="sliderHandle">
+                            <div class="slider-line"></div>
+                            <div class="slider-button">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                                    <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                                </svg>
+                            </div>
+                            <div class="slider-line"></div>
+                        </div>
+
+                        <!-- Labels -->
+                        <div class="comparison-label left-label">Original (Low-Res)</div>
+                        <div class="comparison-label right-label">Enhanced</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // Define paths
+    const originalSrc = "{{ url_for('main.uploaded_file', filename=original) }}";
+    const enhancedSrc = "{{ url_for('main.uploaded_file', filename=processed) }}";
+    
+    // Current mode
+    let currentMode = 'slider';
+
+    // Mode switching
+    function switchToMode(mode) {
+        currentMode = mode;
+        const switchView = document.getElementById('switch-view');
+        const sliderView = document.getElementById('slider-view');
+        const modeSwitchBtn = document.getElementById('mode-switch');
+        const modeSliderBtn = document.getElementById('mode-slider');
+
+        if (mode === 'switch') {
+            switchView.style.display = 'block';
+            sliderView.style.display = 'none';
+            modeSwitchBtn.classList.add('active');
+            modeSliderBtn.classList.remove('active');
+        } else {
+            switchView.style.display = 'none';
+            sliderView.style.display = 'block';
+            modeSwitchBtn.classList.remove('active');
+            modeSliderBtn.classList.add('active');
+        }
+    }
+
+    // Toggle Switch functionality (for switch mode)
     const toggle = document.getElementById('view-toggle');
     const image = document.getElementById('result-image');
     const title = document.getElementById('image-title');
     const labelOriginal = document.getElementById('label-original');
     const labelEnhanced = document.getElementById('label-adhanced');
-
-    // Define paths
-    const originalSrc = "{{ url_for('main.uploaded_file', filename=original) }}";
-    const enhancedSrc = "{{ url_for('main.uploaded_file', filename=processed) }}";
 
     toggle.addEventListener('change', function() {
         if(this.checked) {
@@ -54,5 +139,78 @@
             labelEnhanced.classList.remove('active');
         }
     });
+
+    // Slider functionality (for slider mode)
+    const sliderHandle = document.getElementById('sliderHandle');
+    const beforeWrapper = document.getElementById('beforeWrapper');
+    const sliderContainer = sliderHandle.parentElement;
+    
+    let isDragging = false;
+
+    function updateSliderPosition(percentage) {
+        // Clamp between 0 and 100
+        percentage = Math.max(0, Math.min(100, percentage));
+        
+        // Update the clip path of the before image
+        beforeWrapper.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+        
+        // Update slider handle position
+        sliderHandle.style.left = `${percentage}%`;
+    }
+
+    function handleMove(clientX) {
+        if (!isDragging && event.type !== 'click') return;
+        
+        const rect = sliderContainer.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const percentage = (x / rect.width) * 100;
+        
+        updateSliderPosition(percentage);
+    }
+
+    // Mouse events
+    sliderHandle.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            handleMove(e.clientX);
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    // Touch events for mobile
+    sliderHandle.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        e.preventDefault();
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+            handleMove(e.touches[0].clientX);
+        }
+    });
+
+    document.addEventListener('touchend', () => {
+        isDragging = false;
+    });
+
+    // Click anywhere on the slider to move
+    sliderContainer.addEventListener('click', (e) => {
+        if (e.target !== sliderHandle && !sliderHandle.contains(e.target)) {
+            handleMove(e.clientX);
+        }
+    });
+
+    // Initialize slider at 50%
+    updateSliderPosition(50);
+    
+    // Initialize to slider mode
+    switchToMode('slider');
 </script>
 {% endblock %}
