@@ -1,5 +1,5 @@
 # iMMage Visual enhanceD
-![alt text](image.png)
+![alt text](public/image.png)
 
 This is a web application built with **Flask** that uses a **Super-Resolution Convolutional Neural Network (SRCNN)** to upscale low-resolution images. Users can upload an image, and compare the original lower-quality version with the enhanced high-resolution result.
 
