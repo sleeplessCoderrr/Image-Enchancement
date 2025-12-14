@@ -2,21 +2,57 @@
 
 {% block content %}
 <div class="container">
-    <div style="text-align: center; margin-bottom: 40px;">
+    <div style="text-align: center; margin-bottom: 30px;">
         <h2>Enhancement Complete!</h2>
-        <a href="{{ url_for('main.index') }}" class="btn" style="background-color: #718096; margin-right: 10px;">Upload Another</a>
-        <a href="{{ url_for('main.uploaded_file', filename=processed) }}" download class="btn">Download Result</a>
+        <div style="margin-top: 20px;">
+             <a href="{{ url_for('main.index') }}" class="btn" style="background-color: #718096; margin-right: 10px;">Upload Another</a>
+             <a href="{{ url_for('main.uploaded_file', filename=processed) }}" download class="btn">Download Result</a>
+        </div>
+    </div>
+
+    <!-- Toggle Switch -->
+    <div class="toggle-container">
+        <span class="toggle-label" id="label-original">Original</span>
+        <label class="switch">
+            <input type="checkbox" id="view-toggle" checked>
+            <span class="slider"></span>
+        </label>
+        <span class="toggle-label active" id="label-adhanced">Enhanced</span>
     </div>
 
     <div class="comparison-container">
         <div class="image-card">
-            <h3>Original (Low Res)</h3>
-            <img src="{{ url_for('main.uploaded_file', filename=original) }}" alt="Original Image">
-        </div>
-        <div class="image-card">
-            <h3>Enhanced (High Res Model)</h3>
-            <img src="{{ url_for('main.uploaded_file', filename=processed) }}" alt="Processed Image">
+            <h3 id="image-title">Enhanced Image</h3>
+            <img src="{{ url_for('main.uploaded_file', filename=processed) }}" id="result-image" alt="Result Image">
         </div>
     </div>
 </div>
+
+<script>
+    const toggle = document.getElementById('view-toggle');
+    const image = document.getElementById('result-image');
+    const title = document.getElementById('image-title');
+    const labelOriginal = document.getElementById('label-original');
+    const labelEnhanced = document.getElementById('label-adhanced');
+
+    // Define paths
+    const originalSrc = "{{ url_for('main.uploaded_file', filename=original) }}";
+    const enhancedSrc = "{{ url_for('main.uploaded_file', filename=processed) }}";
+
+    toggle.addEventListener('change', function() {
+        if(this.checked) {
+            // Show Enhanced
+            image.src = enhancedSrc;
+            title.textContent = "Enhanced Image";
+            labelEnhanced.classList.add('active');
+            labelOriginal.classList.remove('active');
+        } else {
+            // Show Original
+            image.src = originalSrc;
+            title.textContent = "Original Image";
+            labelOriginal.classList.add('active');
+            labelEnhanced.classList.remove('active');
+        }
+    });
+</script>
 {% endblock %}

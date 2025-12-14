@@ -6,50 +6,75 @@
         <h2>Upload low-res image</h2>
         <p>Drag and drop your image here, or click to select</p>
         
-        <form action="{{ url_for('main.index') }}" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" id="fileElem" accept="image/*" style="display:none" onchange="this.form.submit()">
+        <form action="{{ url_for('main.index') }}" method="post" enctype="multipart/form-data" id="upload-form">
+            <input type="file" name="file" id="fileElem" accept="image/*" style="display:none">
             <label for="fileElem" class="btn">Select Image</label>
         </form>
     </div>
 </div>
 
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <h3>Enhancing Image...</h3>
+    <p>Please wait, this may take a moment.</p>
+</div>
+
 <script>
     let dropArea = document.getElementById('drop-area');
+    let overlay = document.getElementById('loading-overlay');
+    let form = document.getElementById('upload-form');
+    let fileElem = document.getElementById('fileElem');
 
+    // Drag & Drop handlers
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, preventDefaults, false)
+        dropArea.addEventListener(eventName, preventDefaults, false)
     });
 
     function preventDefaults (e) {
-    e.preventDefault();
-    e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
     }
 
     ['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, highlight, false)
+        dropArea.addEventListener(eventName, highlight, false)
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, unhighlight, false)
+        dropArea.addEventListener(eventName, unhighlight, false)
     });
 
     function highlight(e) {
-    dropArea.style.borderColor = 'var(--primary-color)';
-    dropArea.style.backgroundColor = '#eef2f7';
+        dropArea.style.borderColor = 'var(--primary-color)';
+        dropArea.style.backgroundColor = '#eef2f7';
     }
 
     function unhighlight(e) {
-    dropArea.style.borderColor = '#cbd5e0';
-    dropArea.style.backgroundColor = '#fff';
+        dropArea.style.borderColor = '#cbd5e0';
+        dropArea.style.backgroundColor = '#fff';
     }
 
     dropArea.addEventListener('drop', handleDrop, false);
 
     function handleDrop(e) {
-    var dt = e.dataTransfer;
-    var files = dt.files;
-    document.getElementById('fileElem').files = files;
-    document.getElementById('fileElem').form.submit();
+        var dt = e.dataTransfer;
+        var files = dt.files;
+        fileElem.files = files;
+        submitForm();
+    }
+    
+    // File Input change
+    fileElem.addEventListener('change', function() {
+        if(this.files.length > 0) {
+            submitForm();
+        }
+    });
+
+    function submitForm() {
+        // Show overlay
+        overlay.style.display = 'flex';
+        // Submit
+        form.submit();
     }
 </script>
 {% endblock %}
