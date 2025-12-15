@@ -4,3 +4,6 @@ __pycache__/
 uploads/
 *.db
 .env
+.vscode
+./SRCNN/result/
+./SRCNN/result2/
